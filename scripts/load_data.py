@@ -1,41 +1,50 @@
 import pandas as pd
 from tree import AVLTree
 
-def build_tree(fname):
-    """
-    Load Reddit submissions CSV and build an AVL tree indexed by score.
-    Stores unixtime internally for easy filtering.
-    """
+def build_tree(fname, menuItem=None, start=None, end=None):
+    import pandas as pd
+    from tree import AVLTree
+
     df = pd.read_csv(fname, engine="python", on_bad_lines="skip")
 
-    # Drop rows with missing critical info
-    df = df.dropna(subset=['score', 'title', 'username', 'rawtime'])
+    # Clean dataset
+    df = df.dropna(subset=['score', 'title', 'username', 'unixtime'])
     df = df.drop_duplicates(subset=['reddit_id'])
 
-    # Convert rawtime to UTC-aware datetime
-    df['time_posted'] = pd.to_datetime(df['rawtime'], errors='coerce', utc=True)
+    # fix date format
+    if start:
+        start_ts = int(start.timestamp())
+    else:
+        start_ts = None
 
-    # Convert to unixtime for internal storage
-    df['unixtime'] = df['time_posted'].apply(lambda x: int(x.timestamp()) if pd.notnull(x) else None)
+    if end:
+        end_ts = int(end.timestamp())
+    else:
+        end_ts = None
 
-    # Optional: add convenience columns
-    df['year'] = df['time_posted'].dt.year
-    df['month'] = df['time_posted'].dt.month
-    df['day'] = df['time_posted'].dt.day
-    df['hour'] = df['time_posted'].dt.hour
-    df['weekday'] = df['time_posted'].dt.day_name()
+    # filter by date
+    if menuItem == 4:
+        filtered_df = df
+
+        if start_ts is not None:
+            filtered_df = filtered_df[filtered_df["unixtime"] >= start_ts]
+
+        if end_ts is not None:
+            filtered_df = filtered_df[filtered_df["unixtime"] <= end_ts]
+
+    else:
+        filtered_df = df
 
     tree = AVLTree()
 
-    # Build AVL tree
-    for _, row in df.iterrows():
+    for _, row in filtered_df.iterrows():
         post_data = {
             "subreddit": row["subreddit"],
             "title": row["title"],
             "id": row["username"],
-            "unixtime": row["unixtime"],  # internal timestamp
+            "unixtime": row["unixtime"],
             "score": row["score"]
         }
         tree.add(row["score"], post_data)
 
-    return tree, df
+    return tree, filtered_df

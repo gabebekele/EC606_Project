@@ -84,6 +84,21 @@ class AVLTree:
 
     @staticmethod
     def filter_bytime(posts, start_date=None, end_date=None):
+        start_ts = int(start_date.timestamp()) if start_date else None
+        end_ts = int(end_date.timestamp()) if end_date else None
+
+        filtered = []
+        for post in posts:
+            t = post.get("unixtime")
+            if t is None:
+                continue  # skip posts with missing time
+            if start_ts is not None and t < start_ts:
+                continue  # too early
+            if end_ts is not None and t > end_ts:
+                continue  # too late
+            filtered.append(post)
+        return filtered
+        """"
         #Filter posts by datetime (optional) 
         if start_date:
             start_ts = int(start_date.timestamp())
@@ -105,6 +120,7 @@ class AVLTree:
                 continue
             filtered.append(post)
         return filtered
+        """
 
     def find_by_score(self, score, start_date=None, end_date=None):
         node_posts = self.search(self.root, score)

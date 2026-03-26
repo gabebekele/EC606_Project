@@ -20,7 +20,7 @@ def print_query_results(title, posts, score=None, low=None, high=None, start_dat
     if score is not None:
         header += f" score={score}"
     if low is not None and high is not None:
-        header += f" range=[{low}, {high}]"
+        header += f" range {low} to {high}"
     if top_k is not None:
         header += f" top-{top_k}"
     header += period_text
@@ -66,18 +66,34 @@ def user_interface():
             print("Goodbye!")
             break
 
-        # Optional date filter
-        start_str = input("Start date (YYYY-MM-DD) [optional]: ").strip()
-        end_str = input("End date (YYYY-MM-DD) [optional]: ").strip()
-        start_date = datetime.fromisoformat(start_str) if start_str else None
-        end_date = datetime.fromisoformat(end_str) if end_str else None
+        # Optional date filter 
+        while True:
+            start_str = input("Start date (YYYY-MM-DD) [optional]: ").strip()
+            if not start_str:
+                start_date = None
+                break
+            try:
+                start_date = datetime.fromisoformat(start_str)
+                break
+            except ValueError:
+                print("Invalid date. Try again.\n")
 
+        while True:
+            end_str = input("End date (YYYY-MM-DD) [optional]: ").strip()
+            if not end_str:
+                end_date = None
+                break
+            try:
+                end_date = datetime.fromisoformat(end_str)
+                break
+            except ValueError:
+                print("Invalid date. Try again.\n")
         
         if choice == "1":
             while True:
                 inputScore = input("Enter desired score: ")
                 if not inputScore.isdigit():
-                    print(f"Invalid input. Please enter a positive integer.\n")
+                    print("Invalid input. Please enter a positive integer.\n")
                     continue
 
                 score = int(inputScore)
@@ -151,30 +167,34 @@ def user_interface():
             while True:
                 depth_input = input(f"What would you like the AVL tree depth to be? (1–{avlheight}, default=3): ").strip()
 
-                # Default value
                 if depth_input == "":
                     depth = 3
-                else:
-                    # Ensure it is a number
-                    if not depth_input.isdigit():
-                        print(f"Invalid input. Please enter a number between 1 and {avlheight}.\n")
-                        continue
+                    break
 
-                    depth = int(depth_input)
+                if not depth_input.isdigit():
+                    print("Invalid input. Enter a number.\n")
+                    continue
 
-                    # Validate range
-                    if depth <= 0 or depth > avlheight:
-                        print(f"Invalid input. Please enter a number between 1 and {avlheight}.\n")
-                        continue
-                
+                depth = int(depth_input)
+
+                if depth <= 0 or depth > avlheight:
+                    print(f"Invalid input. Enter 1–{avlheight}.\n")
+                    continue
+
                 break
 
             print(f"Generating AVL tree PNG (depth = {depth})...")
-            dot = tree.export_graphviz(tree.root, max_depth=depth)
+
+            
+            if start_date or end_date:
+                four_tree, four_df = build_tree("submissions.csv", 4, start_date, end_date)
+                print(f"Number of posts in tree: {len(four_df)}")
+                dot = four_tree.export_graphviz(four_tree.root, max_depth=depth)
+            else:
+                dot = tree.export_graphviz(tree.root, max_depth=depth)
+
             dot.render("avl_tree", format="png", cleanup=True)
             print("Tree saved as 'avl_tree.png'")
-
-        
 
 if __name__ == "__main__":
     user_interface()
