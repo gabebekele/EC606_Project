@@ -110,3 +110,12 @@ Score: 13, Title: Example post title
 FUTURE IMPROVEMENTS
 
 The first major improvement would to implement a graphical user interface to add to the aesthetics of the program. I would also like to add the ability to store data in a database. Performance comparisons with other data structures would also be a good addition to the product.
+
+
+REFERENCES
+
+- https://www.geeksforgeeks.org/python/how-to-convert-datetime-to-unix-timestamp-in-python/
+
+- https://graphviz.readthedocs.io/en/stable/manual.html
+
+- https://www.w3schools.com/python/python_user_input.asp
